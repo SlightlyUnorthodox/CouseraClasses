@@ -1,0 +1,91 @@
+---
+title       : Data Preprocessor
+subtitle    : Coursera Developing Data Products Course Project
+author      : Dax Gerts
+job         :
+framework   : io2012     # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : []            # {mathjax, quiz, bootstrap}
+mode        : standalone # {standalone, draft}
+knit        : slidify::knit2slides
+output: html_document
+---
+
+## Project Statement:
+
+One of the key ideas emphasized in Coursera's Data Science Specialization has been that the cleaning and preprocessing of data is typically the lengthiest part of any analysis by a significant factor.
+
+Knowing this, the Data Preprocessor app is designed to simplify this process by allowing a user to simultaneously view a dataset and perform early data cleaning and preprocessing. 
+
+As an extended goal, the Data Preprocessor attempts to find generalized methods for data cleaning that can be toggled on or off easily using built-in widget in Shiny, thereby reducing the overall level of expertise needed to obtain useable data.
+
+---
+
+## Step 1. Upload a Dataset
+
+The first step is to pick a dataset to download. While the Data Preprocessor comes pre-set with the `mtcars` dataset, any dataset url should work that ends with ".csv" (note: the Shiny Servers do not support https).
+```{r,eval=FALSE}
+      #ui.R code for upload widget
+      textInput("fileName","File Name:","newData"),
+      downloadButton("downloadData","Download")
+      #server.R code for upload processes
+      output$table <- renderDataTable(
+        tab <- read.table(url(input$url),header = input$header,sep = input$space,na.strings =    c("NA","","na","!#DIV/0"))  
+```
+
+
+---
+
+## 2. Clean and Preprocess Data
+
+While the proprocessing choices are still fairly limited in the early stages of design, there are still options to remove headers, skip initial lines, and root out empty and NA cells.
+
+```{r,eval=FALSE}
+      #The following is an approximation of the server.ui code
+      #mtcars loaded as example
+      input$url <- "http://vincentarelbundock.github.io/Rdatasets/csv/datasets/mtcars.csv"
+      tab2 <<- read.table(url(input$url),header = input$header,skip = input$skip, sep = input$space,na.strings =  c("NA","","na","!#DIV/0"))
+      if(input$nas == TRUE) {
+        tab2 <- tab2[,which(apply(tab2,2,function(x) {sum(is.na)}) == 0)]
+      }
+      renderDataTable(tab2)
+```
+*Because the interactive tables in Data Preprocessor can't be displayed in Slidify, I just ran brief summary operations on the above code.
+```{r,echo=FALSE}
+      tab <- read.csv(url("http://vincentarelbundock.github.io/Rdatasets/csv/datasets/mtcars.csv"))
+      dim(tab)
+      colnames(tab)
+```
+
+---
+
+## 3. Download Clean Dataset
+
+Lastly, the Data Processor app displays a download button with text field for naming the new new dataset. The data format defaults to ".csv" files.
+
+```{r,eval=FALSE}
+      #ui.R code for download widget
+      textInput("fileName","File Name:","newData"),
+      downloadButton("downloadData","Download")
+      #server.R code for download processes
+      output$downloadData <- downloadHandler(
+        filename = function() {
+          paste(input$fileName, '.csv',sep='')
+        },
+        content = function(file) {
+          write.csv(tab2, file)
+        }
+      )
+```
+
+
+---
+
+## Closing Statement and Future Applications
+
+The hope is that this tool will help simplify the data cleaning process by making any abnormalities or bad data in a fresh data set clearly visible. 
+
+At this moment, there is still plenty of room to expand this tool. While the upload/download functionality is easy to use and fully functional, the preprocessing options are severely limited. 
+
+In the future, more functions will implemented, in particular, variations of the manipulate library and some aspects of sapply, lapply, and various subsetting mechanics.
