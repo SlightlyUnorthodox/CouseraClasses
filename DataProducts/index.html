@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Data Preprocessor</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Data Preprocessor">
+  <meta name="author" content="Dax Gerts">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="http://slidifylibraries2.googlecode.com/git/inst/libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/io2012/js/slides" 
+    src="http://slidifylibraries2.googlecode.com/git/inst/libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+        <slide class="title-slide segue nobackground">
+  <hgroup class="auto-fadein">
+    <h1>Data Preprocessor</h1>
+    <h2>Coursera Developing Data Products Course Project</h2>
+    <p>Dax Gerts<br/></p>
+  </hgroup>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Project Statement:</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>One of the key ideas emphasized in Coursera&#39;s Data Science Specialization has been that the cleaning and preprocessing of data is typically the lengthiest part of any analysis by a significant factor.</p>
+
+<p>Knowing this, the Data Preprocessor app is designed to simplify this process by allowing a user to simultaneously view a dataset and perform early data cleaning and preprocessing. </p>
+
+<p>As an extended goal, the Data Preprocessor attempts to find generalized methods for data cleaning that can be toggled on or off easily using built-in widget in Shiny, thereby reducing the overall level of expertise needed to obtain useable data.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-2" style="background:;">
+  <hgroup>
+    <h2>Step 1. Upload a Dataset</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The first step is to pick a dataset to download. While the Data Preprocessor comes pre-set with the <code>mtcars</code> dataset, any dataset url should work that ends with &quot;.csv&quot; (note: the Shiny Servers do not support https).</p>
+
+<pre><code class="r">      #ui.R code for upload widget
+      textInput(&quot;fileName&quot;,&quot;File Name:&quot;,&quot;newData&quot;),
+      downloadButton(&quot;downloadData&quot;,&quot;Download&quot;)
+      #server.R code for upload processes
+      output$table &lt;- renderDataTable(
+        tab &lt;- read.table(url(input$url),header = input$header,sep = input$space,na.strings =    c(&quot;NA&quot;,&quot;&quot;,&quot;na&quot;,&quot;!#DIV/0&quot;))  
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>2. Clean and Preprocess Data</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>While the proprocessing choices are still fairly limited in the early stages of design, there are still options to remove headers, skip initial lines, and root out empty and NA cells.</p>
+
+<pre><code class="r">      #The following is an approximation of the server.ui code
+      #mtcars loaded as example
+      input$url &lt;- &quot;http://vincentarelbundock.github.io/Rdatasets/csv/datasets/mtcars.csv&quot;
+      tab2 &lt;&lt;- read.table(url(input$url),header = input$header,skip = input$skip, sep = input$space,na.strings =  c(&quot;NA&quot;,&quot;&quot;,&quot;na&quot;,&quot;!#DIV/0&quot;))
+      if(input$nas == TRUE) {
+        tab2 &lt;- tab2[,which(apply(tab2,2,function(x) {sum(is.na)}) == 0)]
+      }
+      renderDataTable(tab2)
+</code></pre>
+
+<p>*Because the interactive tables in Data Preprocessor can&#39;t be displayed in Slidify, I just ran brief summary operations on the above code.</p>
+
+<pre><code>## [1] 32 12
+</code></pre>
+
+<pre><code>##  [1] &quot;X&quot;    &quot;mpg&quot;  &quot;cyl&quot;  &quot;disp&quot; &quot;hp&quot;   &quot;drat&quot; &quot;wt&quot;   &quot;qsec&quot; &quot;vs&quot;   &quot;am&quot;  
+## [11] &quot;gear&quot; &quot;carb&quot;
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>3. Download Clean Dataset</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>Lastly, the Data Processor app displays a download button with text field for naming the new new dataset. The data format defaults to &quot;.csv&quot; files.</p>
+
+<pre><code class="r">      #ui.R code for download widget
+      textInput(&quot;fileName&quot;,&quot;File Name:&quot;,&quot;newData&quot;),
+      downloadButton(&quot;downloadData&quot;,&quot;Download&quot;)
+      #server.R code for download processes
+      output$downloadData &lt;- downloadHandler(
+        filename = function() {
+          paste(input$fileName, &#39;.csv&#39;,sep=&#39;&#39;)
+        },
+        content = function(file) {
+          write.csv(tab2, file)
+        }
+      )
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>Closing Statement and Future Applications</h2>
+  </hgroup>
+  <article data-timings="">
+    <p>The hope is that this tool will help simplify the data cleaning process by making any abnormalities or bad data in a fresh data set clearly visible. </p>
+
+<p>At this moment, there is still plenty of room to expand this tool. While the upload/download functionality is easy to use and fully functional, the preprocessing options are severely limited. </p>
+
+<p>In the future, more functions will implemented, in particular, variations of the manipulate library and some aspects of sapply, lapply, and various subsetting mechanics.</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Project Statement:'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='Step 1. Upload a Dataset'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='2. Clean and Preprocess Data'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='3. Download Clean Dataset'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='Closing Statement and Future Applications'>
+         5
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="http://slidifylibraries2.googlecode.com/git/inst/libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

@@ -9,4 +9,5 @@ This repository is a condensation of the different code projects and assignments
 * Practical Machine Learning
 * Statistical Inference
 * Reproducible Research
+* Developing Data Products
 * Data Science 
