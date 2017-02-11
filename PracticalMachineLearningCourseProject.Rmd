@@ -1,0 +1,153 @@
+---
+title: "Practical Machine Learning: Course Project"
+author: "Dax Gerts"
+date: "July 21, 2015"
+output: html_document
+---
+
+## Summary
+
+In this report, data was examined from the Weight Lifting Exercise Dataset, which provided extensive accelerometer data from individuals performing a variety of exercises. 
+
+This investigation used data from the accelerometers on the belt, forearm, and dumbell obtained from 6 participants in 5 different exercises. From this specific subset, predictive models were built to determine the types of activities being carried out in each case and to test these predictions against provided test data.
+
+These methods, predictions, and resulting analysis were documented in this report. In addition, one of the following outcomes  was submitted for each of the provided test cases.
+
+Possible Outcomes:
+
+Value | Exercise
+------|-------
+A     |Exactly according to specification
+B     |Throwing elbows to the front
+C     |Lifting the dumbbell only halfway
+D     |Lowering the dumbbell only halfway
+E     |Throwing the hips to the front
+
+WLE Data Set:
+*(Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.)* 
+
+
+## Setup
+
+The necessary libraries to build and test this machine learning algorithm are listed below.
+
+### Loading Libraries
+
+```{r, warning=FALSE,message=FALSE}
+library(AppliedPredictiveModeling)
+library(caret)
+library(randomForest)
+set.seed(12345)
+```
+
+### Storing Data
+
+Begin by downloading the test and training data and reading them into usable variables. Remove "bad" observations while doing so.
+
+```{r}
+# Download ands store testing/training sets
+# Ignore empty strings and NA and #DIV/0! values
+train <- read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"),header=TRUE,na.strings=c("","NA"))
+test<- read.csv(url("https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"), header=TRUE,na.strings=c("","NA"))
+train$classe <- as.factor(train$classe)
+# View data set (train)
+str(train)
+```
+
+## Data Cleaning
+
+Having downloaded the testing and training datasets, it became readily apparent that several columns contained unusable data (NA's). These columns were removed as they did not provide any useful information.
+
+```{r}
+train <- train[,which(apply(train,2,function(x) {sum(is.na(x))}) == 0)]
+test <- test[,which(apply(test,2,function(x) {sum(is.na(x))}) == 0)]
+```
+
+It was also noted that the first 7 columns provided data that was not relevant to the creation of a useful prediction algorithm (participant information, timestamps, etc). The columns were also removed
+
+```{r}
+train <- train[,8:length(colnames(train))]
+test <- test[,8:length(colnames(test))]
+```
+
+After this process was completed, the following columns remained.
+
+```{r}
+colnames(train)
+```
+
+## Preprocessing
+
+In an effort to further trim the predictor variables used in this model, attributes with near-zero variance (NZV) were removed from the model. It was reasoned that these values lent little, if any, predictive value to the final model.
+
+```{r}
+NZV <- nearZeroVar(train,saveMetrics=TRUE)
+train <- train[,NZV$nzv == FALSE]
+NZV <- nearZeroVar(test,saveMetrics=TRUE)
+test <- test[,NZV$nzv == FALSE]
+```
+
+## Data Partitioning
+
+Once data is stored in local memory, divide the data set into training and testing sets (60%/40%). Testing set is not to be confused with the test set provided earlier. Testing is used for cross-validation on training model.
+
+```{r}
+inTrain <- createDataPartition(y=train$classe, p=0.6,list=FALSE)
+training <- train[inTrain,]
+testing <- train[-inTrain,]
+```
+
+## Model Training
+
+Having thoroughly processed the data, removing bad values and trimming excess data, the following predictive model was created. Note that the model shown here is one that was saved after an initial run. This was done in order to cut down on time as the model was computationally intensive and took considerable time to generate.
+
+```{r}
+#model <- train(classe~.,data=train,method="rf")
+#Model takes a long time to run, saved after initial run
+#saveRDS(model,"pmlModel.RDS")
+model = readRDS("pmlModel.RDS")
+```
+
+## Accuracy Confirmation
+
+The following summary of model accuracy were generated on both the training and cross-validation sets.
+
+Training:
+```{r}
+trainPred <- predict(model,training)
+confusionMatrix(trainPred,training$classe)
+```
+Testing:
+```{r}
+testingPred <- predict(model,testing)
+confusionMatrix(testingPred,testing$classe)
+```
+
+The results above indicate that the out of sample error will be less than 1%, lending credence to the overall accuracy of the model. Cross-validation was performed to further confirm this.
+
+## Results
+
+Having generated sufficient models and confirmed their accuracy as far as predicting the value of the "classe" attribute, the following predictions were made from the test set.
+
+```{r}
+predictions <- predict(model,test)
+predictions
+```
+
+## Submittables
+
+The following code is not integral to the report, but documents the submission of the predicted results listed above. The code, with minor modifications was provided by the course instructor for Cousera's "Practical Machine Learning" course.
+
+```{r}
+pml_write_files = function(x){
+  n = length(x)
+  for(i in 1:n){
+    filename = paste0("problem_id_",i,".txt")
+    write.table(x[i],file=filename,quote=FALSE,row.names=FALSE,col.names=FALSE)
+  }
+}
+
+pml_write_files(predictions)
+```
+
+
