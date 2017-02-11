@@ -7,3 +7,4 @@ This repository is a condensation of the different code projects and assignments
 * Getting and Cleaning Data
 * Practical Machine Learning
 * Reproducible Research
+* Data Science 
