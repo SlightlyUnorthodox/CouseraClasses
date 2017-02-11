@@ -7,5 +7,6 @@ This repository is a condensation of the different code projects and assignments
 * Getting and Cleaning Data
 * Exploratory Data Analysis
 * Practical Machine Learning
+* Statistical Inference
 * Reproducible Research
 * Data Science 
