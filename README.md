@@ -5,6 +5,7 @@ This repository is a condensation of the different code projects and assignments
 ## Course Listing
 
 * Getting and Cleaning Data
+* Exploratory Data Analysis
 * Practical Machine Learning
 * Reproducible Research
 * Data Science 
